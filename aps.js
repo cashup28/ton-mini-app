@@ -6,33 +6,26 @@ const connector = new TonConnectSDK.TonConnect({
 });
 
 const connectBtn = document.getElementById('connect-btn');
-const walletButtonsContainer = document.getElementById('wallet-buttons');
 const status = document.getElementById('status');
 
-// Kullanılabilir cüzdanları getir ve listele
 connectBtn.onclick = async () => {
-    const walletsList = await connector.getWallets();
+    const wallets = await connector.getWallets();
+    const wallet = wallets.find(w => w.appName === "tonkeeper") || wallets[0];
 
-    walletButtonsContainer.innerHTML = '';
-
-    walletsList.forEach(wallet => {
-        const walletBtn = document.createElement('button');
-        walletBtn.textContent = wallet.name;
-        walletBtn.onclick = () => {
-            connector.connect({
-                bridgeUrl: wallet.bridgeUrl,
-                universalLink: wallet.universalLink
-            });
-        };
-        walletButtonsContainer.appendChild(walletBtn);
-    });
+    if (wallet) {
+        const link = connector.connect({
+            bridgeUrl: wallet.bridgeUrl,
+            universalLink: wallet.universalLink
+        });
+        window.open(link, '_blank');
+    } else {
+        status.innerText = "Cüzdan bulunamadı!";
+    }
 };
 
-// Bağlantıyı algıla ve sonucu göster
 connector.onStatusChange(wallet => {
     if (wallet) {
         status.innerText = `✅ Cüzdan bağlandı:\n${wallet.account.address}`;
-        walletButtonsContainer.innerHTML = '';
         tg.MainButton.setText('Kapat').show();
         tg.sendData(JSON.stringify({ wallet: wallet.account.address }));
     }
