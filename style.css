@@ -8,12 +8,10 @@ body {
 
 button {
     padding: 10px 15px;
-    margin: 8px;
-    font-size: 15px;
-    cursor: pointer;
+    font-size: 16px;
 }
 
 #status {
     font-weight: bold;
-    margin-top: 15px;
+    margin-top: 20px;
 }
