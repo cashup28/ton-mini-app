@@ -1,30 +1,29 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+const connector = new TonConnectSDK.TonConnect({ manifestUrl: 'https://cashup28.github.io/ton-mini-app/tonconnect-manifest.json' });
+
 const connectBtn = document.getElementById('connect-btn');
-const submitBtn = document.getElementById('submit-btn');
-const walletInput = document.getElementById('wallet-input');
 const status = document.getElementById('status');
 
-connectBtn.addEventListener('click', () => {
-    walletInput.hidden = false;
-    submitBtn.hidden = false;
-    connectBtn.hidden = true;
-});
+connectBtn.onclick = async () => {
+    const walletsList = await connector.getWallets();
+    const tonkeeperWallet = walletsList.find(wallet => wallet.appName === 'tonkeeper');
 
-submitBtn.addEventListener('click', () => {
-    const wallet = walletInput.value.trim();
-    const regex = /^(?:EQ|UQ|0:)[a-zA-Z0-9_-]{46,64}$/;
-
-    if (regex.test(wallet)) {
-        status.innerText = '✅ TON Cüzdan başarıyla bağlandı!';
-        tg.MainButton.setText('Uygulamayı Kapat').show();
-        tg.sendData(JSON.stringify({wallet}));
+    if (tonkeeperWallet) {
+        connector.connect({ universalLink: tonkeeperWallet.universalLink, bridgeUrl: tonkeeperWallet.bridgeUrl });
     } else {
-        status.innerText = '❌ TON adresi geçersiz. Lütfen kontrol edin.';
+        status.innerText = "Tonkeeper wallet bulunamadı.";
+    }
+};
+
+// bağlantı başarılı olduğunda çağrılır
+connector.onStatusChange(wallet => {
+    if (wallet) {
+        status.innerText = `✅ Bağlandı: ${wallet.account.address}`;
+        tg.MainButton.setText('Kapat').show();
+        tg.sendData(JSON.stringify({ wallet: wallet.account.address }));
     }
 });
 
-tg.MainButton.onClick(() => {
-    tg.close();
-});
+tg.MainButton.onClick(() => tg.close());
