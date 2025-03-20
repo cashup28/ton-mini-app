@@ -9,9 +9,15 @@ body {
 button {
     padding: 10px 15px;
     font-size: 16px;
+    margin: 5px;
+    cursor: pointer;
 }
 
 #status {
     font-weight: bold;
+    margin-top: 20px;
+}
+
+#wallet-list {
     margin-top: 20px;
 }
