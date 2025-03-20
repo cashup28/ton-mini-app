@@ -8,21 +8,26 @@ const connector = new TonConnectSDK.TonConnect({
 const connectBtn = document.getElementById('connect-btn');
 const status = document.getElementById('status');
 
+// Telegram'ın kendi içinde direkt bağlantı açma yöntemi:
 connectBtn.onclick = async () => {
     const wallets = await connector.getWallets();
-    const wallet = wallets.find(w => w.appName === "tonkeeper") || wallets[0];
+    const tonkeeper = wallets.find(w => w.appName === 'tonkeeper');
+    const tonhub = wallets.find(w => w.appName === 'tonhub');
+    const myTonWallet = wallets.find(w => w.appName === 'mytonwallet');
+
+    const wallet = tonkeeper || tonhub || myTonWallet || wallets[0];
 
     if (wallet) {
-        const link = connector.connect({
+        connector.connect({
             bridgeUrl: wallet.bridgeUrl,
             universalLink: wallet.universalLink
         });
-        window.open(link, '_blank');
     } else {
-        status.innerText = "Cüzdan bulunamadı!";
+        status.innerText = "Uygun cüzdan bulunamadı!";
     }
 };
 
+// Bağlantıyı algıla ve sonucu göster
 connector.onStatusChange(wallet => {
     if (wallet) {
         status.innerText = `✅ Cüzdan bağlandı:\n${wallet.account.address}`;
