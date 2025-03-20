@@ -6,31 +6,34 @@ const connector = new TonConnectSDK.TonConnect({
 });
 
 const connectBtn = document.getElementById('connect-btn');
+const walletList = document.getElementById('wallet-list');
 const status = document.getElementById('status');
 
-// Telegram'ın kendi içinde direkt bağlantı açma yöntemi:
 connectBtn.onclick = async () => {
+    walletList.innerHTML = '';
     const wallets = await connector.getWallets();
-    const tonkeeper = wallets.find(w => w.appName === 'tonkeeper');
-    const tonhub = wallets.find(w => w.appName === 'tonhub');
-    const myTonWallet = wallets.find(w => w.appName === 'mytonwallet');
 
-    const wallet = tonkeeper || tonhub || myTonWallet || wallets[0];
+    wallets.forEach(wallet => {
+        const walletButton = document.createElement('button');
+        walletButton.textContent = wallet.name;
 
-    if (wallet) {
-        connector.connect({
-            bridgeUrl: wallet.bridgeUrl,
-            universalLink: wallet.universalLink
-        });
-    } else {
-        status.innerText = "Uygun cüzdan bulunamadı!";
-    }
+        walletButton.onclick = () => {
+            connector.connect({
+                bridgeUrl: wallet.bridgeUrl,
+                universalLink: wallet.universalLink
+            });
+        };
+
+        walletList.appendChild(walletButton);
+    });
+
+    status.innerText = 'Lütfen bağlanmak istediğiniz cüzdanı seçin.';
 };
 
-// Bağlantıyı algıla ve sonucu göster
 connector.onStatusChange(wallet => {
     if (wallet) {
         status.innerText = `✅ Cüzdan bağlandı:\n${wallet.account.address}`;
+        walletList.innerHTML = '';
         tg.MainButton.setText('Kapat').show();
         tg.sendData(JSON.stringify({ wallet: wallet.account.address }));
     }
